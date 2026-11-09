@@ -1,7 +1,7 @@
 /**
  * audio.js
  * Todo el sonido se sintetiza con Web Audio API (sin archivos):
- *  - Melodía tipo caja de música en bucle ("Noche de paz", dominio público).
+ *  - Melodía alegre tipo carillón en bucle ("Jingle Bells", dominio público).
  *  - Sonido de papel al desenvolver (ruido filtrado a ráfagas).
  *  - Campanilla al aparecer la sorpresa (parciales inarmónicos).
  * El AudioContext se crea solo tras la primera interacción del usuario.
@@ -23,30 +23,34 @@
     let eventIndex = 0;
     let loopStart = 0;
 
-    const BEAT = 0.46; // segundos por pulso (3/4 tranquilo)
+    const BEAT = 0.27; // segundos por pulso (4/4 alegre, ritmo de feria)
 
     // Melodía: [nota MIDI, duración en pulsos]; 0 = silencio
-    const MELODY = [
-      [67, 1.5], [69, 0.5], [67, 1], [64, 3],
-      [67, 1.5], [69, 0.5], [67, 1], [64, 3],
-      [74, 2], [74, 1], [71, 3],
-      [72, 2], [72, 1], [67, 3],
-      [69, 2], [69, 1], [72, 1.5], [71, 0.5], [69, 1],
-      [67, 1.5], [69, 0.5], [67, 1], [64, 3],
-      [69, 2], [69, 1], [72, 1.5], [71, 0.5], [69, 1],
-      [67, 1.5], [69, 0.5], [67, 1], [64, 3],
-      [74, 2], [74, 1], [77, 1.5], [74, 0.5], [71, 1],
-      [72, 3], [76, 3],
-      [72, 1], [67, 1], [64, 1], [67, 1.5], [65, 0.5], [62, 1],
-      [60, 3], [0, 3],
+    // Estribillo de "Jingle Bells" (J. Pierpont, 1857, dominio público)
+    const PHRASE_A = [
+      [64, 1], [64, 1], [64, 2],
+      [64, 1], [64, 1], [64, 2],
+      [64, 1], [67, 1], [60, 1.5], [62, 0.5],
+      [64, 4],
+      [65, 1], [65, 1], [65, 1.5], [65, 0.5],
+      [65, 1], [64, 1], [64, 1], [64, 0.5], [64, 0.5],
     ];
-    // Acorde por compás (raíz + tercera + quinta) para el acompañamiento de vals
+    const MELODY = [
+      ...PHRASE_A,
+      [64, 1], [62, 1], [62, 1], [64, 1],
+      [62, 2], [67, 2],
+      ...PHRASE_A,
+      [67, 1], [67, 1], [65, 1], [62, 1],
+      [60, 4],
+    ];
+    // Acompañamiento "um-pa": bajo en 1 y 3, acorde en 2 y 4
     const CHORDS = {
-      C: [60, 64, 67],
-      G: [55, 59, 62],
-      F: [53, 57, 60],
+      C: [48, 64, 67],
+      F: [53, 65, 69],
+      G: [43, 62, 65],
     };
-    const BARS = 'C C C C G G C C F F C C F F C C G G C C C G C C'.split(' ');
+    const BARS = 'C C C C F C G G C C C C F C G C'.split(' ');
+    const BEATS_PER_BAR = 4;
 
     // Lista de eventos precalculada (pulso de inicio, nota, volumen)
     const EVENTS = (() => {
@@ -57,14 +61,18 @@
         beat += dur;
       }
       BARS.forEach((name, bar) => {
-        const [root, third, fifth] = CHORDS[name];
-        list.push({ beat: bar * 3, midi: root, vel: 0.45 });
-        list.push({ beat: bar * 3 + 1, midi: third + 12, vel: 0.22 });
-        list.push({ beat: bar * 3 + 2, midi: fifth + 12, vel: 0.22 });
+        const [bass, a, b] = CHORDS[name];
+        const t0 = bar * BEATS_PER_BAR;
+        list.push({ beat: t0, midi: bass + 12, vel: 0.5 });
+        list.push({ beat: t0 + 2, midi: bass + 19, vel: 0.4 });
+        for (const off of [1, 3]) {
+          list.push({ beat: t0 + off, midi: a, vel: 0.22 });
+          list.push({ beat: t0 + off, midi: b, vel: 0.22 });
+        }
       });
-      return list.sort((a, b) => a.beat - b.beat);
+      return list.sort((x, y) => x.beat - y.beat);
     })();
-    const LOOP_BEATS = BARS.length * 3 + 3; // pequeño respiro antes de repetir
+    const LOOP_BEATS = BARS.length * BEATS_PER_BAR + 4; // pequeño respiro antes de repetir
 
     const midiToFreq = (m) => 440 * Math.pow(2, (m - 69) / 12);
 

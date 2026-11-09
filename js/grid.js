@@ -28,10 +28,10 @@
     const TAU = Math.PI * 2;
 
     const RIBBONS = {
-      gold: '#f5c96a',
-      silver: '#dfe5f0',
-      violet: '#8b6bd6',
-      navy: '#24357a',
+      gold: '#ffc93c',
+      white: '#ffffff',
+      red: '#e0262f',
+      green: '#1f9e5a',
     };
 
     /** Sistema de partículas reutilizable para el destello al abrir. */
@@ -149,7 +149,7 @@
         }
         this.glowMat = new THREE.SpriteMaterial({
           map: getGlowTexture(),
-          color: '#f5c96a',
+          color: '#ffd27a',
           transparent: true,
           opacity: 0.32,
           blending: THREE.AdditiveBlending,
@@ -159,9 +159,10 @@
 
       _ribbonFor(day) {
         const { bg } = paperStyle(day);
-        if (bg === '#d9a441') return this.ribbonMats.navy;
-        if (isLight(bg)) return this.ribbonMats.violet;
-        return day % 2 ? this.ribbonMats.gold : this.ribbonMats.silver;
+        // Rojo sobre amarillos y cremas; verde en algunos; oro o blanco en el resto
+        if (isLight(bg)) return day % 3 === 0 ? this.ribbonMats.green : this.ribbonMats.red;
+        if (bg === '#1f9e5a' || bg === '#19b5a5') return this.ribbonMats.red;
+        return day % 2 ? this.ribbonMats.gold : this.ribbonMats.white;
       }
 
       _createBox(day) {

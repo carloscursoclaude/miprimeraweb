@@ -1,7 +1,9 @@
-# Calendario de Adviento · Noche mágica
+# Calendario de Adviento · Fachada de juguetería
 
 Calendario de Adviento en 3D hecho **solo con HTML, CSS y JavaScript**, sin frameworks, sin bundlers y **sin servidor**.
 La única librería externa es **Three.js 0.169**, que se carga desde jsDelivr.
+
+El estilo se inspira en las fachadas navideñas animadas de los grandes almacenes: una fachada de juguete con bombillas de colores que se persiguen, un toldo festoneado, columnas de caramelo, un escenario con alfombra roja y dos soldaditos que marchan. Los colores son vivos y la música alegre. Es un diseño propio: no usa logotipos, nombres ni personajes de ninguna marca.
 
 Hay 24 cajas de regalo con papeles dibujados por código. Al pulsar una, se desenvuelve (el lazo se deshace, la tapa salta y sale un destello) y aparece una mini sorpresa 3D distinta para cada día. Todas las cajas se pueden abrir en cualquier momento.
 
@@ -9,7 +11,7 @@ Hay 24 cajas de regalo con papeles dibujados por código. Al pulsar una, se dese
 
 **Haz doble clic en `index.html`** (o arrástralo a una ventana del navegador). No hace falta instalar nada ni arrancar ningún servidor.
 
-Solo necesitas conexión a Internet para descargar Three.js y las fuentes de Google (Cormorant Garamond e Inter).
+Solo necesitas conexión a Internet para descargar Three.js y las fuentes de Google (Fredoka y Nunito).
 Funciona en las versiones actuales de Chrome, Edge, Firefox y Safari (16.4 o superior, por el `importmap`).
 
 ### Por qué funciona sin servidor
@@ -35,14 +37,15 @@ El progreso (cajas abiertas y mute) se guarda en `localStorage`.
 
 ```
 index.html        Estructura, importmap, overlay, modal, lista accesible y scripts
-css/styles.css    Estilo "Noche mágica", responsive y prefers-reduced-motion
+css/styles.css    Estilo de juguetería, responsive y prefers-reduced-motion
 js/main.js        Escena, cámara, render, bloom, cielo, nieve, bucle, resize,
                   selección con Raycaster, secuencia abrir/volver, visor 3D
                   y arranque (carga de Three.js)
 js/grid.js        Las 24 cajas: rejilla 6×4 / 4×6, hover, desenvolver, estados
+js/facade.js      Fachada: marco con bombillas, toldo, columnas, escenario y soldaditos
 js/surprises.js   Las 24 sorpresas (una función por día que devuelve un THREE.Group)
-js/textures.js    Ilustraciones generadas con <canvas> (papeles, números, brillos…)
-js/audio.js       Música y efectos con Web Audio API (sin archivos de audio)
+js/textures.js    Ilustraciones generadas con <canvas> (papeles, papel pintado, números…)
+js/audio.js       «Jingle Bells» (dominio público) y efectos con Web Audio API
 js/storage.js     Lectura/escritura en localStorage con try/catch
 js/ui.js          Overlay, botones, modal, foco y accesibilidad
 js/easing.js      Funciones de easing propias y gestor de animaciones

@@ -35,7 +35,32 @@
       let lastFocus = null;
       let modalReturn = null;
 
-      // --- Lista de botones accesibles (Tab / Enter abren cajas) ---
+      // --- Título tipo letrero: cada letra en su color (solo decorativo) ---
+    const titleEl = $('title');
+    if (titleEl) {
+      const text = titleEl.textContent;
+      titleEl.setAttribute('aria-label', text);
+      titleEl.textContent = '';
+      let k = 0;
+      text.split(' ').forEach((word, w) => {
+        if (w > 0) titleEl.append(' ');
+        // Cada palabra agrupada para que el salto de línea no la parta
+        const wordEl = document.createElement('span');
+        wordEl.className = 'word';
+        wordEl.setAttribute('aria-hidden', 'true');
+        for (const ch of word) {
+          const span = document.createElement('span');
+          span.className = `ch c${k % 5}`;
+          span.style.setProperty('--i', String(k));
+          span.textContent = ch;
+          wordEl.append(span);
+          k++;
+        }
+        titleEl.append(wordEl);
+      });
+    }
+
+    // --- Lista de botones accesibles (Tab / Enter abren cajas) ---
       const buttons = [];
       for (let day = 1; day <= 24; day++) {
         const li = document.createElement('li');

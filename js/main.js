@@ -16,6 +16,7 @@
 
     const { tween, updateTweens, Ease, setMotionScale } = deps.easing;
     const { AdventGrid } = deps.grid;
+    const { Facade } = deps.facade;
     const { createSurprise, getSurpriseInfo, setSurpriseQuality } = deps.surprises;
     const { createBackgroundTexture, createSnowflakeTexture, createMoonTexture, getGlowTexture } = deps.textures;
     const audio = deps.audio;
@@ -57,6 +58,7 @@
     let camera;
     let composer = null;
     let grid;
+    let facade;
     let stars;
     let snow;
     let moon;
@@ -338,7 +340,7 @@
     function computeHome() {
       const aspect = camera.aspect;
       const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-      const { width, height } = grid.getSize();
+      const { width, height, centerY } = facade.getExtents();
       const portrait = aspect < 0.85;
       const top = portrait ? 0.19 : 0.2; // espacio para el título
       const bottom = portrait ? 0.1 : 0.08; // espacio para los botones
@@ -346,17 +348,18 @@
       const usable = 1 - top - bottom;
       const dH = height / (2 * tanV * usable);
       const dW = width / (2 * tanV * aspect * (1 - 2 * side));
-      const d = Math.max(dH, dW) + 0.7;
+      const d = Math.max(dH, dW) + 0.4;
       const visH = 2 * d * tanV;
-      const yOff = ((top - bottom) / 2) * visH;
+      const yOff = centerY + ((top - bottom) / 2) * visH;
       home.pos.set(0, yOff, d);
       home.target.set(0, yOff, 0);
 
-      // Luna en la esquina superior derecha del encuadre
+      // Luna en la esquina superior derecha del encuadre (solo en horizontal)
       const md = d + 70;
       const halfH = md * tanV;
       const halfW = halfH * aspect;
-      moon.position.set(halfW * (portrait ? 0.66 : 0.62), yOff + halfH * (portrait ? 0.86 : 0.6), -70);
+      moon.position.set(halfW * 0.62, yOff + halfH * 0.6, -70);
+      moon.visible = !portrait; // en vertical el título ocupa ese hueco
 
       // Volumen de la nieve
       snow.setBounds({ x: 0, y: yOff, w: visH * aspect + 8, h: visH + 6, zMin: -8, zMax: d - 3 });
@@ -519,7 +522,11 @@
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       const cols = w / h < 0.85 ? 4 : 6;
-      if (cols !== grid.cols) grid.layout(cols);
+      if (cols !== grid.cols || !facade.width) {
+        grid.layout(cols);
+        const size = grid.getSize();
+        facade.build(size.width, size.height, cols === 4);
+      }
       computeHome();
       if (state.mode === 'grid' || state.mode === 'loading') {
         cam.pos.copy(home.pos);
@@ -541,6 +548,7 @@
       stars.material.uniforms.uTime.value = t;
       snow.update(t, dt);
       grid.update(t, dt);
+      facade.update(t);
       moon.userData.halo.material.opacity = 0.33 + Math.sin(t * 0.7) * 0.04;
 
       // Ligero paralaje con el ratón en la vista de rejilla
@@ -566,8 +574,8 @@
       try {
         await Promise.race([
           Promise.all([
-            document.fonts.load('700 120px "Cormorant Garamond"'),
-            document.fonts.load('600 40px "Cormorant Garamond"'),
+            document.fonts.load('600 120px "Fredoka"'),
+            document.fonts.load('700 40px "Fredoka"'),
           ]),
           new Promise((resolve) => window.setTimeout(resolve, 2000)),
         ]);
@@ -610,16 +618,16 @@
       renderer.setPixelRatio(PIXEL_RATIO);
       renderer.setSize(window.innerWidth, window.innerHeight, false);
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.05;
+      renderer.toneMappingExposure = 1.12;
 
       scene = new THREE.Scene();
       scene.background = createBackgroundTexture();
       camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 400);
 
-      // Iluminación cálida: ambiente tenue + puntuales doradas
-      scene.add(new THREE.AmbientLight('#5a6ab0', 0.55));
-      scene.add(new THREE.HemisphereLight('#9fb3ff', '#141c40', 0.6));
-      const key = new THREE.DirectionalLight('#ffe2b0', 1.7);
+      // Iluminación de escaparate: ambiente cálido + focos dorados
+      scene.add(new THREE.AmbientLight('#fff1dc', 0.55));
+      scene.add(new THREE.HemisphereLight('#ffffff', '#3a4a8a', 0.75));
+      const key = new THREE.DirectionalLight('#fff0d0', 2.0);
       key.position.set(5, 8, 12);
       const rim = new THREE.DirectionalLight('#7f8cff', 0.7);
       rim.position.set(-6, 4, -4);
@@ -634,6 +642,7 @@
       snow = createSnow(QUALITY.snow);
       scene.add(stars, moon, snow.points);
 
+      facade = new Facade(scene, { reduced: reducedMotion });
       grid = new AdventGrid(scene, { burstCount: QUALITY.burst, reduced: reducedMotion });
       state.opened.forEach((day) => grid.setOpenedInstant(day));
 
@@ -641,13 +650,13 @@
         composer = new EffectComposer(renderer);
         composer.setPixelRatio(PIXEL_RATIO);
         composer.addPass(new RenderPass(scene, camera));
-        composer.addPass(new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.55, 0.5, 0.82));
+        // Umbral alto: solo brillan bombillas, llamas y estrellas, no la fachada iluminada
+        composer.addPass(new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.5, 0.45, 1.5));
         composer.addPass(new OutputPass());
       }
 
       viewer = new SurpriseViewer(ui.viewerCanvas);
 
-      grid.layout(window.innerWidth / window.innerHeight < 0.85 ? 4 : 6);
       onResize();
       snow.setBounds({}, true);
       window.addEventListener('resize', onResize);
@@ -704,7 +713,8 @@
       const textures = Adviento.textures({ THREE });
       const surprises = Adviento.surprises({ THREE, textures });
       const grid = Adviento.grid({ THREE, easing, textures, surprises });
-      Adviento.main({ THREE, addons, easing, storage, audio, ui, textures, surprises, grid });
+      const facade = Adviento.facade({ THREE, textures });
+      Adviento.main({ THREE, addons, easing, storage, audio, ui, textures, surprises, grid, facade });
     })
     .catch((err) => {
       console.error(err);

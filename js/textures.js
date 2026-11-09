@@ -12,20 +12,20 @@
   Adviento.textures = function (deps) {
     const THREE = deps.THREE;
 
-    // Papeles base (fondo + tinta) dentro de la paleta "Noche mágica"
+    // Papeles base (fondo + tinta): colores vivos de juguetería navideña
     const PAPER_BASES = [
-      { bg: '#1b2a5a', ink: '#f5c96a' }, // azul noche + oro
-      { bg: '#3a2a6e', ink: '#f4f7ff' }, // violeta + nieve
-      { bg: '#f4efe2', ink: '#1b2a5a' }, // crema + azul noche
-      { bg: '#24357a', ink: '#c9d3e8' }, // azul real + plata
-      { bg: '#d9a441', ink: '#1b2a5a' }, // oro viejo + azul
-      { bg: '#14204a', ink: '#b79cf0' }, // medianoche + lila
-      { bg: '#5b3a8c', ink: '#f5c96a' }, // púrpura + oro
-      { bg: '#c9d3e8', ink: '#3a2a6e' }, // plata + violeta
-      { bg: '#0f1838', ink: '#f4f7ff' }, // casi negro + nieve
-      { bg: '#2f3f8f', ink: '#f5c96a' }, // azul + oro
-      { bg: '#efe3c2', ink: '#5b3a8c' }, // marfil + púrpura
-      { bg: '#46307f', ink: '#c9d3e8' }, // violeta + plata
+      { bg: '#e0262f', ink: '#ffffff' }, // rojo + blanco
+      { bg: '#1f9e5a', ink: '#ffe066' }, // verde + amarillo
+      { bg: '#ffc93c', ink: '#e0262f' }, // amarillo + rojo
+      { bg: '#2f8ff0', ink: '#ffffff' }, // azul cielo + blanco
+      { bg: '#ff6fae', ink: '#ffffff' }, // rosa + blanco
+      { bg: '#fff6e6', ink: '#e0262f' }, // crema + rojo
+      { bg: '#ff8c2b', ink: '#fff6e6' }, // naranja + crema
+      { bg: '#8e5cf0', ink: '#ffe066' }, // violeta + amarillo
+      { bg: '#19b5a5', ink: '#ffffff' }, // turquesa + blanco
+      { bg: '#1d3c8f', ink: '#ffc93c' }, // azul marino + oro
+      { bg: '#fff6e6', ink: '#1f9e5a' }, // crema + verde
+      { bg: '#c2185b', ink: '#ffe066' }, // frambuesa + amarillo
     ];
     const PATTERNS = ['stars', 'snowflakes', 'stripes', 'dots', 'diamonds', 'waves'];
 
@@ -238,12 +238,12 @@
       ctx.save();
       ctx.shadowColor = 'rgba(0,0,0,0.4)';
       ctx.shadowBlur = 18;
-      ctx.fillStyle = '#fbf6ea';
+      ctx.fillStyle = '#ffffff';
       dot(ctx, cx, cy, R);
       ctx.restore();
 
       ctx.lineWidth = 10;
-      ctx.strokeStyle = '#e2b65a';
+      ctx.strokeStyle = '#e0262f';
       ctx.beginPath();
       ctx.arc(cx, cy, R - 5, 0, Math.PI * 2);
       ctx.stroke();
@@ -255,13 +255,13 @@
       ctx.stroke();
       ctx.globalAlpha = 1;
 
-      ctx.fillStyle = '#1b2a5a';
-      ctx.font = `700 ${Math.round(R * 1.2)}px "Cormorant Garamond", Georgia, serif`;
+      ctx.fillStyle = '#1d3c8f';
+      ctx.font = `600 ${Math.round(R * 1.15)}px "Fredoka", "Trebuchet MS", Arial, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(String(day), cx, cy + R * 0.06);
 
-      ctx.fillStyle = '#d9a441';
+      ctx.fillStyle = '#ffc93c';
       drawStar(ctx, cx, cy - R * 0.68, R * 0.08);
       drawStar(ctx, cx, cy + R * 0.7, R * 0.08);
 
@@ -311,19 +311,62 @@
       });
     }
 
-    /** Degradado vertical del cielo (#0b1026 → #1b2a5a). */
+    /** Degradado vertical del cielo: azul de anochecer festivo. */
     function createBackgroundTexture() {
       return cached('background', () => {
         const c = makeCanvas(16, 512);
         const ctx = c.getContext('2d');
         const g = ctx.createLinearGradient(0, 0, 0, 512);
-        g.addColorStop(0, '#0b1026');
-        g.addColorStop(0.55, '#131d45');
-        g.addColorStop(0.85, '#1b2a5a');
-        g.addColorStop(1, '#241f5e');
+        g.addColorStop(0, '#0a1f5c');
+        g.addColorStop(0.5, '#123a8f');
+        g.addColorStop(0.85, '#1f5fc0');
+        g.addColorStop(1, '#3a7fd6');
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, 16, 512);
         return toTexture(c);
+      });
+    }
+
+    /** Papel pintado de la fachada: rayas crema, estrellitas y acebo. */
+    function createWallTexture() {
+      return cached('wall', () => {
+        const s = 256;
+        const c = makeCanvas(s, s);
+        const ctx = c.getContext('2d');
+        const stripe = s / 8;
+        for (let i = 0; i < 8; i++) {
+          ctx.fillStyle = i % 2 ? '#fff3dc' : '#ffe6bd';
+          ctx.fillRect(i * stripe, 0, stripe, s);
+        }
+        // Estrellitas doradas y ramitas de acebo alternas
+        for (let y = 0; y < 4; y++) {
+          for (let x = 0; x < 4; x++) {
+            const px = x * (s / 4) + s / 8;
+            const py = y * (s / 4) + (x % 2 ? s / 8 : s / 4) - s / 16;
+            if ((x + y) % 2) {
+              ctx.fillStyle = '#f2b733';
+              drawStar(ctx, px, py, 9);
+            } else {
+              ctx.fillStyle = '#2e9e5b';
+              for (const a of [-0.6, 0.6]) {
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.rotate(a);
+                ctx.beginPath();
+                ctx.ellipse(0, -9, 4.5, 9, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+              }
+              ctx.fillStyle = '#e0262f';
+              dot(ctx, px - 2, py + 1, 3.2);
+              dot(ctx, px + 3, py + 2, 3.2);
+            }
+          }
+        }
+        const tex = toTexture(c);
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        return tex;
       });
     }
 
@@ -382,6 +425,6 @@
       });
     }
 
-    return { paperStyle, isLight, createBoxTextures, getGlowTexture, createSnowflakeTexture, createBackgroundTexture, createMoonTexture, createCandyTexture };
+    return { paperStyle, isLight, createBoxTextures, getGlowTexture, createSnowflakeTexture, createBackgroundTexture, createWallTexture, createMoonTexture, createCandyTexture };
   };
 })();

@@ -15,7 +15,7 @@
     />
     <link rel="stylesheet" href="css/styles.css" />
 
-    <!-- Three.js desde CDN mediante import map (sin bundlers) -->
+    <!-- Three.js desde CDN mediante import map (sin bundlers ni servidor) -->
     <script type="importmap">
       {
         "imports": {
@@ -104,7 +104,7 @@
       <p class="noscript">Este calendario necesita JavaScript para funcionar.</p>
     </noscript>
 
-    <!-- Aviso si los módulos no llegan a cargar (sin conexión al CDN, file://…) -->
+    <!-- Aviso si Three.js no llega a cargar (p. ej. sin conexión a Internet) -->
     <script>
       window.setTimeout(function () {
         if (window.__adventReady) return;
@@ -113,9 +113,17 @@
         if (!text || !loader) return;
         loader.classList.add('has-error');
         text.textContent =
-          'La escena tarda en cargar. Comprueba tu conexión y abre la página desde un servidor local (por ejemplo, npx serve).';
+          'La escena tarda en cargar. Comprueba tu conexión a Internet y recarga la página.';
       }, 15000);
     </script>
-    <script type="module" src="js/main.js"></script>
+    <!-- Scripts clásicos (no módulos): se pueden abrir con doble clic, sin servidor -->
+    <script src="js/easing.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/textures.js"></script>
+    <script src="js/surprises.js"></script>
+    <script src="js/grid.js"></script>
+    <script src="js/main.js"></script>
   </body>
 </html>

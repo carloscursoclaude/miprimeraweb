@@ -1,26 +1,26 @@
 # Calendario de Adviento · Noche mágica
 
-Calendario de Adviento en 3D hecho **solo con HTML, CSS y JavaScript** (módulos ES, sin frameworks ni bundlers).
-La única librería externa es **Three.js 0.169**, que se carga desde jsDelivr con un `importmap`.
+Calendario de Adviento en 3D hecho **solo con HTML, CSS y JavaScript**, sin frameworks, sin bundlers y **sin servidor**.
+La única librería externa es **Three.js 0.169**, que se carga desde jsDelivr.
 
 Hay 24 cajas de regalo con papeles dibujados por código. Al pulsar una, se desenvuelve (el lazo se deshace, la tapa salta y sale un destello) y aparece una mini sorpresa 3D distinta para cada día. Todas las cajas se pueden abrir en cualquier momento.
 
-## Cómo ejecutarlo en local
+## Cómo abrirlo
 
-Los módulos ES no funcionan abriendo el archivo con `file://`. Hace falta un servidor estático:
+**Haz doble clic en `index.html`** (o arrástralo a una ventana del navegador). No hace falta instalar nada ni arrancar ningún servidor.
 
-```bash
-npx serve .
-```
+Solo necesitas conexión a Internet para descargar Three.js y las fuentes de Google (Cormorant Garamond e Inter).
+Funciona en las versiones actuales de Chrome, Edge, Firefox y Safari (16.4 o superior, por el `importmap`).
 
-y abre la URL que indique (normalmente http://localhost:3000).
+### Por qué funciona sin servidor
 
-Alternativas:
+Los navegadores bloquean los módulos ES locales (`<script type="module" src="js/…">`) cuando la página se abre con `file://`. Por eso:
 
-- **VS Code**: extensión *Live Server* → clic derecho en `index.html` → *Open with Live Server*.
-- **Python**: `python3 -m http.server 8000` y abre http://localhost:8000.
+- Los archivos de `js/` son **scripts clásicos**. Cada uno registra una «fábrica» en el objeto global `window.Adviento` y recibe sus dependencias como parámetro.
+- **Three.js** (y sus addons `OrbitControls` y bloom) se carga con `import()` dinámico desde el CDN, resuelto por el `importmap` de `index.html`. jsDelivr envía cabeceras CORS, así que esa carga sí está permitida desde `file://`.
+- Al final de `js/main.js`, un pequeño arranque espera a Three.js y crea los módulos en orden.
 
-Necesitas conexión a Internet para cargar Three.js y las fuentes de Google (Cormorant Garamond e Inter).
+Si aun así prefieres un servidor (por ejemplo, para probarlo en el móvil por red local), también funciona con `npx serve .` o con Live Server.
 
 ## Cómo se usa
 
@@ -34,10 +34,11 @@ El progreso (cajas abiertas y mute) se guarda en `localStorage`.
 ## Estructura
 
 ```
-index.html        Estructura, importmap, overlay, modal y lista accesible
+index.html        Estructura, importmap, overlay, modal, lista accesible y scripts
 css/styles.css    Estilo "Noche mágica", responsive y prefers-reduced-motion
 js/main.js        Escena, cámara, render, bloom, cielo, nieve, bucle, resize,
-                  selección con Raycaster, secuencia abrir/volver y visor 3D
+                  selección con Raycaster, secuencia abrir/volver, visor 3D
+                  y arranque (carga de Three.js)
 js/grid.js        Las 24 cajas: rejilla 6×4 / 4×6, hover, desenvolver, estados
 js/surprises.js   Las 24 sorpresas (una función por día que devuelve un THREE.Group)
 js/textures.js    Ilustraciones generadas con <canvas> (papeles, números, brillos…)

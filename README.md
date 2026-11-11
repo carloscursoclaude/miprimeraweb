@@ -35,6 +35,9 @@ El progreso (cajas abiertas y mute) se guarda en `localStorage`.
 
 ## Estructura
 
+La explicación detallada del código (arquitectura, módulos, flujo y guía de cambios) está en [DOCUMENTACION.md](DOCUMENTACION.md).
+
+
 ```
 index.html        Estructura, importmap, overlay, modal, lista accesible y scripts
 css/styles.css    Estilo de juguetería, responsive y prefers-reduced-motion
